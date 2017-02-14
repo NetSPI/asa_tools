@@ -302,7 +302,7 @@ def print_notify(notify_payload):
         print("unknown")
         print("[-] Not vulnerable... exiting.")
         exit(1)
-    print("\tNofication DATA: ", end="")
+    print("\tNotification DATA: ", end="")
     if  plen > 8:
         print(notify_payload[8])
         print("[-] Not vulnerable... exiting.")
@@ -320,7 +320,7 @@ ip = argv[1].split(":")[0]
 port = int(argv[1].split(":")[1])
 
 print("""This tool is used to verify the presence of CVE-2016-1287, an unauthenticated remote code execution vulnerability affecting Cisco's ASA products.
-No attempt will be made to execute code, this simply observes behaviour of affected versions when malformed fragments are sent to the ASA.
+No attempt will be made to execute code, this simply observes behavior of affected versions when malformed fragments are sent to the ASA.
 Continue? [y/N] """)
 if not input().lower() == "y":
     exit(1)
@@ -398,17 +398,6 @@ for i in range(3):
 
     print("[*] Received Response")
     
-
-    # Check for notify payload
-    #if resp[16] == 41:
-    #    notify = resp[28:-1]
-    #    notification = (notify[6] << 8) + notify[7]
-    #    if notify[5] == 0:
-    #        data = (notify[8] << 8) + notify[9]
-    #    else:
-    #        data = bytearray_sum(notify[8+data[5]+1:-1]
-    #    # Check for invalid_ke_payload
-    #    if notification == 17:
             
     # Valid SA
     if resp[16] == 33:
@@ -438,12 +427,16 @@ sock.sendto(first_frag, (ip, port))
 print("[*] Sending second fragment")
 sock.sendto(second_frag, (ip, port))
 
+timeout = False
 
-resp, _ =  sock.recvfrom(2048)
+sock.settimeout(5.0)
+try:
+    resp, _ =  sock.recvfrom(2048)
+except socket.timeout:
+    print("[*] IKE Fragment was dropped indicating the ASA is not vulnerable.")
+    timeout = True
 #Check for notify payload
 if resp[16] == 41:
     print("[*] Notify Payload found. Printing Notify payload data.")
     print_notify(resp[28:])
-    
-
-hexdump.hexdump(resp)
+    hexdump.hexdump(resp)
