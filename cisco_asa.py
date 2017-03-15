@@ -435,6 +435,7 @@ try:
 except socket.timeout:
     print("[*] IKE Fragment was dropped indicating the ASA is not vulnerable.")
     timeout = True
+    exit(1)
 #Check for notify payload
 if resp[16] == 41:
     print("[*] Notify Payload found. Printing Notify payload data.")
